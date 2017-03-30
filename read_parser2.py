@@ -8,6 +8,7 @@ Spyderエディタ
 import os
 import numpy as np
 import pandas as pd
+import re
 
 T112_directly = u'C:\\Users\\j13-taniguchi\\Desktop\\git\\edit_parser'
 
@@ -29,20 +30,33 @@ for idx, t in enumerate(T112_data):
     # 現在の添え字番号から4桁がMTIの値になっているかを確認
     MTI = T112_data[idx:idx+4]
     if MTI in transaction_MTI:
-        # ビットマップを解析
+        # Primary bitmap 及び　DE001についてを解析
         hexmap = T112_data[idx+4:idx+20].encode('hex')
-        bitmap = ""
+        bitmap = "0"
         for hex in hexmap:
-            bit = bin(int(hex))
+            # hexを16進数へ変換し、bitへさらに変換する。
+            bit = bin(int(hex, 16))
+            # bit変換により先頭2桁へ邪魔な文字がつくため、切り取る
             bit = bit[2:]
             bit = bit.rjust(4,'0')
             bitmap+=bit
+        DE001 = bitmap
+        element_list = []
+        for idx, element in enumerate(bitmap):
+            if element == '1':
+                element_list.append(idx)
         # ビットマップをデータフレームへ展開
-        pd.DataFrame(list(bitmap))
+        #DE1 = pd.DataFrame(list(bitmap))
+
         # トランザクション毎に処理を分ける
         if MTI == '1644':
+            # レイアウト情報ファイルより1644のレイアウトのみを抽出
             df_transaction1644 = df_transaction_category[df_transaction_category['FORMAT-MTI'] == 1644]
-  
+            
+            #DE002
+            if bitmap[2] == '1':
+                T112_data[idx]
+                
             # 1644-697の確認
             DE24 = T112_data[idx+20:idx+23]
             if DE24 == '697':
@@ -102,24 +116,25 @@ for idx, t in enumerate(T112_data):
 
         elif MTI == '1240':
             df_transaction1240 = df_transaction_category[df_transaction_category['FORMAT-MTI'] == 1240]
-            
+            #DE002
+            print('bitmap[2]: %s' % bitmap[2])
+            if bitmap[2] == '1':
+                DE002 = T112_data[idx+20:idx+39]
+
             # 1240-200の確認
             DE24 = T112_data[idx+80:idx+83]
-            print("DE24 :%s" % DE24)
             if DE24 == '200':
                 df_transaction1240_200 = df_transaction1240[df_transaction1240['FORMAT-FC'] == 200]
                 # 編集処理
 
             # 1240-205の確認
             DE24 = T112_data[idx+80:idx+83]
-            print("DE24 :%s" % DE24)
             if DE24 == '205':
                 df_transaction1240_205 = df_transaction1240[df_transaction1240['FORMAT-FC'] == 205]
                 # 編集処理
 
             # 1240-280の確認
             DE24 = T112_data[idx+80:idx+83]
-            print("DE24 :%s" % DE24)
             if DE24 == '280':
                 df_transaction1240_280 = df_transaction1240[df_transaction1240['FORMAT-FC'] == 205]
                 # 編集処理
