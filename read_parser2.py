@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
+# -*- coding: sjis -*-
 """
-Spyderエディタ
+Created on Fri Mar 31 11:46:56 2017
 
-これは一時的なスクリプトファイルです
+@author: j13-taniguchi
 """
 
 import os
@@ -10,16 +10,16 @@ import numpy as np
 import pandas as pd
 import re
 
-T112_directly = u'C:\\Users\\j13-taniguchi\\Desktop\\git\\edit_parser'
+T112_directly = u'C:\\Users\\j13-taniguchi\\Desktop\\git\\edit_parser\\input'
 
 os.chdir(T112_directly)
 
 # レイアウト情報ファイルの内容をロード
-df_transaction_category = pd.read_csv('M_LAYOUT_INFO_No1.csv', 
-                                      encoding='Shift_JIS')
-
-df_layout_category = pd.read_csv('M_LAYOUT_INFO_No2.csv', 
-                                 encoding='Shift_JIS')
+#df_transaction_category = pd.read_csv('M_LAYOUT_INFO_No1.csv', 
+#                                      encoding='Shift_JIS')
+#
+#df_layout_category = pd.read_csv('M_LAYOUT_INFO_No2.csv', 
+#                                 encoding='Shift_JIS')
 
 # T112のデータの取り込み
 with open('TT112T0.001', 'r') as T112_file:
@@ -36,7 +36,7 @@ for idx, t in enumerate(T112_data):
         for hex in hexmap:
             # hexを16進数へ変換し、bitへさらに変換する。
             bit = bin(int(hex, 16))
-            # bit変換により先頭2桁へ邪魔な文字がつくため、切り取る
+            # bit変換により先頭2桁へ邪魔な文字がつくため、切り捨てる。
             bit = bit[2:]
             bit = bit.rjust(4,'0')
             bitmap+=bit
@@ -45,6 +45,8 @@ for idx, t in enumerate(T112_data):
         for idx, element in enumerate(bitmap):
             if element == '1':
                 element_list.append(idx)
+        
+        position = idx + 20
         # ビットマップをデータフレームへ展開
         #DE1 = pd.DataFrame(list(bitmap))
 
@@ -52,10 +54,6 @@ for idx, t in enumerate(T112_data):
         if MTI == '1644':
             # レイアウト情報ファイルより1644のレイアウトのみを抽出
             df_transaction1644 = df_transaction_category[df_transaction_category['FORMAT-MTI'] == 1644]
-            
-            #DE002
-            if bitmap[2] == '1':
-                T112_data[idx]
                 
             # 1644-697の確認
             DE24 = T112_data[idx+20:idx+23]
