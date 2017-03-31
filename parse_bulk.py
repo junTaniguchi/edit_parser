@@ -29,8 +29,17 @@ def parse_bulk(T112_data, idx, element_list):
     for defined_de_name in defined_de_name_list:
         # SQLを発行して各elementのレンジを取得
         element_length = c.execute(sql, defined_de_name)
-        
-        element_object = T112_data[idx:idx+element_length]
-        idx += element_length
-        record[defined_de_name] = element_object
+        if defined_de_name == ['DE048', 'DE062', 'DE123', 'DE124', 'DE125']:
+            # PDSの解析 tag、length、dataを取得
+            tag = T112_data[idx:idx+4]
+            idx = idx + 4
+            length = T112_data[idx:idx+2]
+            idx = idx + 2
+            data = T112_data[idx:idx+len(length)]
+            idx = idx + len(length)
+            record["PDS" + tag] = data
+        else:
+            data = T112_data[idx:idx+element_length]
+            idx += element_length
+            record[defined_de_name] = data
         
