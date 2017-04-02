@@ -16,13 +16,35 @@ T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
 os.chdir(T112_directly)
 
 def parse_bulk(T112_data, idx):
+    '''T112のデータを受け取り、１レコード分を読み込むまで解析し、Dict型へ変換する。
+    引数
+       T112_data(str型)
+         T112のデータ
+       idx(int型)
+         T11の現在読み込んでいる位置を表すポインタ
+    返り値
+       parsed_dict(Dict型)
+         1レコードを解析した結果の下記のようなDict型
+           {
+              "DE002"   : 9999999999999999,
+              "DE003"   : 000000,
+              "PDS0158" : XXXX75,
+              "DE57"    : 000
+              
+           }
+       idx(int型)
+       　　現在のポイントの位置を返す
+         
+    '''
+    
     import sqlite3
-    # 読み込んだレコードの内容をDictionaryへ格納
-    record = {}
-
-    # Bitmap Primary 及び　DE001についてを解析
+    # 読み込んだレコードの内容を格納するためのDictionaryを宣言
+    parsed_dict = {}
+    # デバック用
+    idx = 4
+    # Bitmap Primary 及び　DE001を解析
     hexmap = T112_data[idx+4:idx+20].encode('hex')
-    bitmap = "0"
+    bitmap = ""
     for hex in hexmap:
         # hexを16進数へ変換し、bitへさらに変換する。
         bit = bin(int(hex, 16))
@@ -30,53 +52,84 @@ def parse_bulk(T112_data, idx):
         bit = bit[2:]
         bit = bit.rjust(4,'0')
         bitmap+=bit
+
+    # ビットマップをデータフレームへ展開
+    #bitmap_df = pd.DataFrame(list(bitmap))
     
-    # bitmap_primary と bitmap_secondaryをrecordへ格納
-    record["bitmap_primary"] = bitmap[:64]
-    record["DE001"] = bitmap[64:]
+    # bitmap_primary と bitmap_secondaryをparsed_dictへ格納
+    parsed_dict["bitmap_primary"] = bitmap[:64]
+    parsed_dict["DE001"] = bitmap[64:]
     
     # bitmap上で1が立っているもののみを抽出。
+    # 要素とData Elementでは開始の番号が異なる（要素は0番、DEは1)ので、合わせるためにi+1でリストへ追加）
     element_list = []
     for i, element in enumerate(bitmap):
         if element == '1':
-            element_list.append(i)
+            element_list.append(i+1)
 
     idx+=20
 
     # sqlite3を起動する
     dbname = './sqlite3/transaction.sqlite3'
-    #database=sqlite3.connect(dbname,isolation_level=None)		# オートコミットを有効に指定
-    
     conn = sqlite3.connect(dbname)
     c = conn.cursor()
-
-    sql = 'select LENGTH from DATA_ELEMENT_LIST where DATA_ELEMENT = (?)'
     
     defined_de_name_list = ["DE" + str(i).rjust(3, '0') for i in element_list]
     for defined_de_name in defined_de_name_list:
         if defined_de_name == 'DE001':
             continue
 
-        # SQLを発行して各elementのレンジを取得
-        query = c.execute(sql, (defined_de_name ,))
+        # SQLを発行して各data elementのレンジを取得
+        query = c.execute('select LENGTH from DATA_ELEMENT_LIST where DATA_ELEMENT = (?)', (defined_de_name ,))
         for row in query:
             element_length = row[0]
+        # デバック
+        #print('%s length : %s' % (defined_de_name, element_length))
         
+        # PDS項目の解析
         if defined_de_name in ['DE048', 'DE062', 'DE123', 'DE124', 'DE125']:
-            tag = 0
-            while T112_data[idx:idx+4] > tag:
+            # PDS項目の解析
+            # Additional Areaの最大byte数を取得
+            PDS_field = T112_data[idx:idx+3]
+            idx+=3
+            # Additional Areaの現在位置を指定
+            PDS_idx = 0
+            # PDS_idxが最大byte数を超えるまで繰り返す
+            while PDS_idx < int(PDS_field):
                 # PDSの解析 tag、length、dataを取得
                 tag = T112_data[idx:idx+4]
                 idx+=4
-                length = T112_data[idx:idx+2]
-                idx+=2
-                data = T112_data[idx:idx+len(length)]
-                idx+=len(length)
-                record["PDS" + tag] = data
+                PDS_idx+=4
+                
+                length = T112_data[idx:idx+3]
+                idx+=3
+                PDS_idx+=3
+                
+                data = T112_data[idx:idx+int(length)]
+                idx+=int(length)
+                PDS_idx+=int(length)
+                # parsed_dictへ解析された値を登録
+                parsed_dict["PDS" + tag] = data
+                # デバック
+                print('PDS%s length: %s data: %s' % (tag, length, data))
+                print('PDS_idx = %s' % PDS_idx)
+
         else:
-            data = T112_data[idx:idx+element_length]
-            idx+=element_length
+            # DEの項目の解析
+            if defined_de_name in ["DE002"]:
+                # byte数を取得 (16桁か19桁かを先頭2桁で判断)
+                element_length_str = T112_data[idx:idx+1]
+                element_length = int(element_length_str)
+                idx+=1
+            # 未定義項目以外を解析
             if element_length > 0:
-                record[defined_de_name] = data
+                data = T112_data[idx:idx+element_length]
+                idx+=element_length
+                parsed_dict[defined_de_name] = data
+                # デバック
+                print('%s length : %s data: %s' % (defined_de_name, element_length, data))
     
-    return idx, record
+    
+    
+    
+    return idx, parsed_dict
