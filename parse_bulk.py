@@ -68,7 +68,7 @@ def parse_bulk(T112_data, idx):
     for i, element in enumerate(bitmap):
         if element == '1':
             element_list.append(i+1)
-
+    defined_de_name_list = ["DE" + str(i).rjust(3, '0') for i in element_list]
     idx+=20
 
     # sqlite3を起動する
@@ -76,8 +76,10 @@ def parse_bulk(T112_data, idx):
     conn = sqlite3.connect(dbname)
     c = conn.cursor()
     
-    defined_de_name_list = ["DE" + str(i).rjust(3, '0') for i in element_list]
+    
+    # bitmap上フラグが立っていたdata elementを1項目ずつ解析
     for defined_de_name in defined_de_name_list:
+        # DE001については解析済みのため、パスする。
         if defined_de_name == 'DE001':
             continue
 
@@ -99,15 +101,15 @@ def parse_bulk(T112_data, idx):
             PDS_idx = 0
             # PDS_idxが最大byte数を超えるまで繰り返す
             while PDS_idx < int(PDS_field):
-                # PDSの解析 tag、length、dataを取得
+                # PDSの解析 tagを取得
                 tag = T112_data[idx:idx+4]
                 idx+=4
                 PDS_idx+=4
-                
+                # PDSの解析 lengthを取得
                 length = T112_data[idx:idx+3]
                 idx+=3
                 PDS_idx+=3
-                
+                # PDSの解析 dataを取得
                 data = T112_data[idx:idx+int(length)]
                 idx+=int(length)
                 PDS_idx+=int(length)
@@ -120,7 +122,7 @@ def parse_bulk(T112_data, idx):
         else:
             # DEの項目の解析
             if element_byte > 0:
-                # byte数を取得 (16桁か19桁かを先頭2桁で判断)
+                # byte数を取得 (SQLで取得したbyte数の指定位置で判断)
                 element_length_str = T112_data[idx:idx+element_byte]
                 element_length = int(element_length_str)
                 idx+=element_byte
