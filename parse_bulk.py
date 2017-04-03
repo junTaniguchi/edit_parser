@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 
 
-T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
-#T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
+#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
+T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
 
 os.chdir(T112_directly)
 
@@ -41,9 +41,10 @@ def parse_bulk(T112_data, idx):
     # 読み込んだレコードの内容を格納するためのDictionaryを宣言
     parsed_dict = {}
     # デバック用
-    #idx = 4
+    idx = 4
     # Bitmap Primary 及び　DE001を解析
     parsed_dict["MTI"] = T112_data[idx:idx+4]
+    print("MTI :%s" % T112_data[idx:idx+4])
     hexmap = T112_data[idx+4:idx+20].encode('hex')
     bitmap = ""
     for hex in hexmap:
@@ -80,7 +81,7 @@ def parse_bulk(T112_data, idx):
         if defined_de_name == 'DE001':
             continue
 
-        # SQLを発行して各data elementのレンジを取得
+        # SQLを発行して各data elementのバイト数、T112上にある可変長項目のバイト数指定位置を取得
         query = c.execute('select LENGTH, LENGTH_BYTE from DATA_ELEMENT_LIST where DATA_ELEMENT = (?)', (defined_de_name ,))
         for row in query:
             element_length = row[0]
@@ -113,8 +114,8 @@ def parse_bulk(T112_data, idx):
                 # parsed_dictへ解析された値を登録
                 parsed_dict["PDS" + tag] = data
                 # デバック
-                # print('PDS%s length: %s data: %s' % (tag, length, data))
-                # print('PDS_idx = %s' % PDS_idx)
+                print('PDS%s length: %s data: %s' % (tag, length, data))
+                print('PDS_idx = %s' % PDS_idx)
 
         else:
             # DEの項目の解析

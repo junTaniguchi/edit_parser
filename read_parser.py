@@ -8,8 +8,8 @@ Created on Fri Mar 31 11:46:56 2017
 import os, glob
 import pickle
 
-T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
-#T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
+#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
+T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
 os.chdir(T112_directly)
 
 from parse_bulk import parse_bulk
@@ -32,9 +32,9 @@ T112_path_list = glob.glob("./input/*.*")
 for T112_no, T112_path in enumerate(T112_path_list):
     with open(T112_path, 'r') as T112_file:
         T112_data = T112_file.read()
-        T112_data = [char for char in T112_data if char != '@']
-        T112_data = T112_data.
-
+        # 1014byte単位に存在する@@を削除
+        T112_data = T112_data.replace('@@','')
+        
     transaction_MTI = ['1644','1740','1240','1442']
     # T112のデータをパースする。
     idx = 0
@@ -61,6 +61,7 @@ for T112_no, T112_path in enumerate(T112_path_list):
 # T112のデータの取り込み
 with open('./input/TT112T0.001', 'r') as T112_file:
     T112_data = T112_file.read()
+    T112_data = T112_data.replace('@','')
 
 transaction_MTI = ['1644','1740','1240','1442']
 # T112のデータをパースする。
