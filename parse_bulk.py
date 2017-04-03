@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 
 
-#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
-T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
+T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
+#T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
 
 os.chdir(T112_directly)
 
@@ -41,8 +41,9 @@ def parse_bulk(T112_data, idx):
     # 読み込んだレコードの内容を格納するためのDictionaryを宣言
     parsed_dict = {}
     # デバック用
-    idx = 4
+    #idx = 4
     # Bitmap Primary 及び　DE001を解析
+    parsed_dict["MTI"] = T112_data[idx:idx+4]
     hexmap = T112_data[idx+4:idx+20].encode('hex')
     bitmap = ""
     for hex in hexmap:
@@ -80,9 +81,10 @@ def parse_bulk(T112_data, idx):
             continue
 
         # SQLを発行して各data elementのレンジを取得
-        query = c.execute('select LENGTH from DATA_ELEMENT_LIST where DATA_ELEMENT = (?)', (defined_de_name ,))
+        query = c.execute('select LENGTH, LENGTH_BYTE from DATA_ELEMENT_LIST where DATA_ELEMENT = (?)', (defined_de_name ,))
         for row in query:
             element_length = row[0]
+            element_byte = row[1]
         # デバック
         #print('%s length : %s' % (defined_de_name, element_length))
         
@@ -111,16 +113,17 @@ def parse_bulk(T112_data, idx):
                 # parsed_dictへ解析された値を登録
                 parsed_dict["PDS" + tag] = data
                 # デバック
-                print('PDS%s length: %s data: %s' % (tag, length, data))
-                print('PDS_idx = %s' % PDS_idx)
+                # print('PDS%s length: %s data: %s' % (tag, length, data))
+                # print('PDS_idx = %s' % PDS_idx)
 
         else:
             # DEの項目の解析
-            if defined_de_name in ["DE002"]:
+            if element_byte > 0:
                 # byte数を取得 (16桁か19桁かを先頭2桁で判断)
-                element_length_str = T112_data[idx:idx+1]
+                element_length_str = T112_data[idx:idx+element_byte]
                 element_length = int(element_length_str)
-                idx+=1
+                idx+=element_byte
+
             # 未定義項目以外を解析
             if element_length > 0:
                 data = T112_data[idx:idx+element_length]

@@ -8,8 +8,8 @@ Created on Fri Mar 31 11:46:56 2017
 import os, glob
 import pickle
 
-#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
-T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
+T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
+#T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
 os.chdir(T112_directly)
 
 from parse_bulk import parse_bulk
@@ -32,24 +32,27 @@ T112_path_list = glob.glob("./input/*.*")
 for T112_no, T112_path in enumerate(T112_path_list):
     with open(T112_path, 'r') as T112_file:
         T112_data = T112_file.read()
+        T112_data = [char for char in T112_data if char != '@']
+        T112_data = T112_data.
 
     transaction_MTI = ['1644','1740','1240','1442']
     # T112のデータをパースする。
     idx = 0
-    while idx > len(T112_data):
+    while idx < len(T112_data):
         # 現在の添え字番号から4桁がMTIの値になっているかを確認
         MTI = T112_data[idx:idx+4]
         if MTI in transaction_MTI:
             # T112の中の1レコードを解析する
             idx, parsed_dict = parse_bulk(T112_data, idx)
             # {record_no1 : {解析されたT112のデータ}}
-            output_dict["record_no" + next(gen)] = parsed_dict
+            output_dict[str(next(gen))] = parsed_dict
 
         else:
             idx+=1
+        #print("idx :%s" % idx)
     
     # T112ファイル1件ごとにdictファイルをpickleファイルへ変換
-    with open("./output/parse_T112_%s.pickle" % T112_no+1, 'wb') as pickle_file:
+    with open("./output/parse_T112_%s.pickle" % str(T112_no+1), 'wb') as pickle_file:
         pickle.dump(output_dict, pickle_file)
 
 
