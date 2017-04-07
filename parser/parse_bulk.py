@@ -10,9 +10,8 @@ import numpy as np
 import pandas as pd
 
 
-T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
-
-os.chdir(T112_directly)
+#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
+#os.chdir(T112_directly)
 
 def parse_bulk(T112_data, idx):
     '''T112のデータを受け取り、１レコード分を読み込むまで解析し、Dict型へ変換する。
@@ -98,6 +97,7 @@ def parse_bulk(T112_data, idx):
             idx+=3
             # Additional Areaの現在位置を指定
             PDS_idx = 0
+            additional_dict = {}
             # PDS_idxが最大byte数を超えるまで繰り返す
             while PDS_idx < int(PDS_field):
                 # PDSの解析 tagを取得

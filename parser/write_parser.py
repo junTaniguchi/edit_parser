@@ -9,8 +9,8 @@ import os, glob
 import json
 import pickle
 
-T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
-os.chdir(T112_directly)
+#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
+#os.chdir(T112_directly)
 
 from parse_bulk import parse_bulk
 
