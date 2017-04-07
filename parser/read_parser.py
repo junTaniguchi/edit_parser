@@ -6,10 +6,10 @@ Created on Fri Mar 31 11:46:56 2017
 """
 
 import os, glob
+import json
 import pickle
 
-#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
-T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
+T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
 os.chdir(T112_directly)
 
 from parse_bulk import parse_bulk
@@ -26,7 +26,7 @@ gen = generator()
 output_dict = {}
 
 # inputファイルディレクトリへ格納されているT112ファイルすべてを取得
-T112_path_list = glob.glob("./input/*.*")
+T112_path_list = glob.glob("./../input/T112/*.*")
 
 # T112データを1ファイルずつ解析し、pickleファイルへDict型として出力する
 for T112_no, T112_path in enumerate(T112_path_list):
@@ -51,5 +51,10 @@ for T112_no, T112_path in enumerate(T112_path_list):
         #print("idx :%s" % idx)
     
     # T112ファイル1件ごとにdictファイルをpickleファイルへ変換
-    with open("./output/parse_T112_%s.pickle" % str(T112_no+1), 'wb') as pickle_file:
+    with open("./../output/parse_T112_%s.pickle" % str(T112_no+1), 'wb') as pickle_file:
         pickle.dump(output_dict, pickle_file)
+
+    # T112ファイル1件ごとにdictファイルをjsonファイルへ変換
+    with open("./../output/parse_T112_%s.json" % str(T112_no+1), 'w') as json_file:
+        json_str = json.dumps(output_dict)
+        json.dump(json_str, json_file)

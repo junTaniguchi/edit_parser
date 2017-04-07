@@ -10,8 +10,7 @@ import numpy as np
 import pandas as pd
 
 
-#T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser'
-T112_directly = 'C:/Users/JunTaniguchi/Desktop/git/edit_parser'
+T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
 
 os.chdir(T112_directly)
 
@@ -41,7 +40,7 @@ def parse_bulk(T112_data, idx):
     # 読み込んだレコードの内容を格納するためのDictionaryを宣言
     parsed_dict = {}
     # デバック用
-    idx = 4
+    #idx = 4
     # Bitmap Primary 及び　DE001を解析
     parsed_dict["MTI"] = T112_data[idx:idx+4]
     print("MTI :%s" % T112_data[idx:idx+4])
@@ -72,7 +71,7 @@ def parse_bulk(T112_data, idx):
     idx+=20
 
     # sqlite3を起動する
-    dbname = './sqlite3/transaction.sqlite3'
+    dbname = './../sqlite3/transaction.sqlite3'
     conn = sqlite3.connect(dbname)
     c = conn.cursor()
     
@@ -134,8 +133,6 @@ def parse_bulk(T112_data, idx):
                 parsed_dict[defined_de_name] = data
                 # デバック
                 print('%s length : %s data: %s' % (defined_de_name, element_length, data))
-    
-    
     
     
     return idx, parsed_dict
