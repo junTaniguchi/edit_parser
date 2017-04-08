@@ -22,7 +22,10 @@ def dump_bulk(record_dict):
            {
               "DE002"   : 9999999999999999,
               "DE003"   : 000000,
-              "PDS0158" : XXXX75,
+              "DE048"   : {
+                              PDS0025   : 1111,
+                              PDS0158   : "   75"
+                          }
               "DE57"    : 000
               
            }
@@ -56,8 +59,6 @@ def dump_bulk(record_dict):
        
     # Dictionaryに登録されているキーより、DEとして登録されているもののみを取得し、リスト化
     defined_de_name_list  = [element for element in record_dict.iterkeys() if element[:2] == "DE"]
-    # Dictionaryに登録されているキーより、PDSとして登録されているもののみを取得し、リスト化
-    defined_pds_name_list = [element for element in record_dict.iterkeys() if element[:3] == "PDS"]
 
     # sqlite3を起動する
     dbname = './../sqlite3/transaction.sqlite3'
@@ -80,33 +81,26 @@ def dump_bulk(record_dict):
         
         # PDS項目の解析
         if defined_de_name in ['DE048', 'DE062', 'DE123', 'DE124', 'DE125']:
+            # Dictionaryに登録されているキーより、PDSとして登録されているもののみを取得し、リスト化
+            defined_pds_name_list = [element for element in record_dict[defined_de_name].iterkeys()]
+
             #　辞書に登録されているPDSを1つずつ取り出す
             PDS_field = ""
             for idx, PDS in enumerate(defined_pds_name_list):
                 # 登録されている情報よりtag、length、data情報を取得する。
                 tag    = PDS[3:]
-                length = len(record_dict[PDS]).rjust(3, '0')
-                data   = record_dict[PDS]
+                length = str(len(record_dict[defined_de_name][PDS])).rjust(3, '0')
+                data   = record_dict[defined_de_name][PDS]
                 PDS_element = tag + length + data
-                # 取り出した情報の総lengthが996(999-先頭に設定するPDS総length数3桁)を超えている場合、
-                # そのDEでの設定を行わず、次のAdditional Fieldで記述する。
-                if len(PDS_field + element) <= 996:
-                    PDS_field+=PDS_element
-                else:
-                    defined_pds_name_list.pop(idx-1)
-                    PDS_total_length = str(len(PDS_field)).rjust(3, '0')
-                    PDS_total_field = PDS_total_length + PDS_field
-                    record_str=+PDS_total_field
-                    break
+                PDS_field+=PDS_element
                 
                 # デバック
                 print('PDS%s length: %s data: %s' % (tag, length, data))
-            # 996文字以内だった場合、既に記載済みのPDSをlistより削除する。
-            defined_pds_name_list.pop(idx)
+
             # PDS fieldの頭へ設定するためのPDS_fieldの総lengthを算出
             PDS_total_length = str(len(PDS_field)).rjust(3, '0')
             PDS_total_field = PDS_total_length + PDS_field
-            record_str=+PDS_total_field
+            record_str+=PDS_total_field
                 
 
         else:

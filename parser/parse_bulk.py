@@ -26,7 +26,10 @@ def parse_bulk(T112_data, idx):
            {
               "DE002"   : 9999999999999999,
               "DE003"   : 000000,
-              "PDS0158" : XXXX75,
+              "DE048"   : {
+                              PDS0025   : 1111,
+                              PDS0158   : "   75"
+                          }
               "DE57"    : 000
               
            }
@@ -97,7 +100,7 @@ def parse_bulk(T112_data, idx):
             idx+=3
             # Additional Areaの現在位置を指定
             PDS_idx = 0
-            additional_dict = {}
+            parsed_dict[defined_de_name] = {}
             # PDS_idxが最大byte数を超えるまで繰り返す
             while PDS_idx < int(PDS_field):
                 # PDSの解析 tagを取得
@@ -113,7 +116,7 @@ def parse_bulk(T112_data, idx):
                 idx+=int(length)
                 PDS_idx+=int(length)
                 # parsed_dictへ解析された値を登録
-                parsed_dict["PDS" + tag] = data
+                parsed_dict[defined_de_name]["PDS" + tag] = data
                 # デバック
                 print('PDS%s length: %s data: %s' % (tag, length, data))
                 print('PDS_idx = %s' % PDS_idx)
