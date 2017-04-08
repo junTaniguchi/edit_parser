@@ -8,6 +8,7 @@ Created on Fri Mar 31 11:46:56 2017
 import os, glob
 import json
 import pickle
+from dump_bulk import dump_bulk
 
 #T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
 #os.chdir(T112_directly)
@@ -22,32 +23,25 @@ def generator():
         i+=1
 gen = generator()
 
-# 出力用のDict型用意
-output_dict = {}
-
 # inputファイルディレクトリへ格納されているT112ファイルすべてを取得
-pickle_path_list = glob.glob("./../input/JSON/*.*")
+json_path_list = glob.glob("./../input/JSON/*.*")
 
-# T112データを1ファイルずつ解析し、pickleファイルへDict型として出力する
-for pickle_no, pickle_path in enumerate(pickle_path_list):
-    with open(pickle_path, 'r') as pickle_file:
-        pickle_dict = pickle_file.load()
+# T112データを1ファイルずつ解析し、JSONファイルからDict型へ変換する
+input_dict_list = []
+for json_no, json_path in enumerate(json_path_list):
+    with open(json_path, 'r') as json_file:
+        json_data   = json.load(json_file)
+        record_dict = json.loads(json_data)
+        input_dict_list.append(record_dict)
+
+    # 出力用のｓｔｒ型用意
+    output_str = ""
         
-    # T112のデータをパースする。
-    idx = 0
-    while idx < len(T112_data):
-        # 現在の添え字番号から4桁がMTIの値になっているかを確認
-        MTI = T112_data[idx:idx+4]
-        if MTI in ['1644', '1740', '1240', '1442']:
-            # T112の中の1レコードを解析する
-            idx, parsed_dict = parse_bulk(T112_data, idx)
-            # {record_no1 : {解析されたT112のデータ}}
-            output_dict[str(next(gen))] = parsed_dict
+    for i in range(len(record_dict)):
+        dict_idx = str(i)
+        record_str = dump_bulk(record_dict)
+        output_str+=record_str
 
-        else:
-            idx+=1
-        #print("idx :%s" % idx)
-    
-    # T112ファイル1件ごとにdictファイルをpickleファイルへ変換
-    with open("./output/parse_T112_%s.pickle" % str(T112_no+1), 'wb') as pickle_file:
-        pickle.dump(output_dict, pickle_file)
+    # ファイルへoutput_strを出力
+    with open("./output/parse_json_%s.pickle" % str(json_no+1), 'wb') as str_file:
+        str_file.write(output_str)

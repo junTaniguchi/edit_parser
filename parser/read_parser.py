@@ -16,7 +16,7 @@ from parse_bulk import parse_bulk
 
 # ジェネレータ作成
 def generator():
-    i = 1
+    i = 0
     while True:
         yield i
         i+=1
