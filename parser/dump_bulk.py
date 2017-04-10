@@ -115,5 +115,9 @@ def dump_bulk(record_dict):
                 # デバック
                 print('%s data: %s' % (defined_de_name, record_dict[defined_de_name]))
     
+    # 1レコードのバイト数を導出し、レコードの先頭へバイナリで付与
+    str_record_length = str(len(record_str)).zfill(6)
+    record_header = str_record_length.decode("hex")
+    record_str = '@' + record_header + record_str
     
     return record_str
