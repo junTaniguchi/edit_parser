@@ -54,5 +54,5 @@ for json_no, json_path in enumerate(json_path_list):
         output_str+=record_str
 
     # ファイルへoutput_strを出力
-    with open("./output/parse_json_%s.pickle" % str(json_no+1), 'wb') as str_file:
+    with open("./output/parse_json_%s.dat" % str(json_no+1), 'wb') as str_file:
         str_file.write(output_str)
