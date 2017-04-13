@@ -31,7 +31,6 @@ def dump_bulk(record_dict):
         辞書の内容を元にbulk変換した文字列
          
     '''
-    
     import sqlite3
     # 読み込んだDictionaryの内容を格納するためのrecordを宣言
     record_str = ""
@@ -113,13 +112,24 @@ def dump_bulk(record_dict):
                 print('%s data: %s' % (defined_de_name, record_dict[defined_de_name]))
     
     
-    # 1レコードのバイト数を導出し、レコードの先頭へバイナリで付与
-    str_record_length = str(len(record_str)).zfill(6)
-    record_header = str_record_length.decode("hex")
-    record_str = '@' + record_header + record_str
+    # record_headerを作成（固定値："\x40\x00"）
+    record_header = "\x40\x00"
+    # 1レコードのバイト数を16進数で導出し、レコードの先頭へバイナリで付与
+    str_record_length = str(hex(len(record_str))[2:]).zfill(4).decode("hex")
+    
+    record_header+=str_record_length.decode("hex")
+    record_str = record_header + record_str
 
-    # 末尾へx\00x\00を付与
-    end_null = "0000".decode("hex")
+    # 末尾へpaddingを付与
+    # record_lengthの長さでpaddingのバイト数が変わる。
+    record_length = len(record_str)
+    if record_length % 3 == 0:
+        end_null = "0".zfill(3*2).decode("hex")
+    elif record_length % 2 == 0:
+        end_null = "0".zfill(2*2).decode("hex")
+    else:
+        end_null = "0".zfill(1*2).decode("hex")
+    
     record_str+=end_null
     
     return record_str
