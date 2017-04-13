@@ -6,9 +6,6 @@ Created on Fri Mar 31 11:46:56 2017
 """
 
 import os
-import numpy as np
-import pandas as pd
-
 
 T112_directly = 'C:/Users/j13-taniguchi/Desktop/git/edit_parser/parser'
 
@@ -115,9 +112,14 @@ def dump_bulk(record_dict):
                 # デバック
                 print('%s data: %s' % (defined_de_name, record_dict[defined_de_name]))
     
+    
     # 1レコードのバイト数を導出し、レコードの先頭へバイナリで付与
     str_record_length = str(len(record_str)).zfill(6)
     record_header = str_record_length.decode("hex")
     record_str = '@' + record_header + record_str
+
+    # 末尾へx\00x\00を付与
+    end_null = "0000".decode("hex")
+    record_str+=end_null
     
     return record_str
